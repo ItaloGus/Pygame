@@ -8,6 +8,8 @@ BLACK = (0,0,0)
 VERMELHO = (255,0,0)
 VERDE = (0,255,0)
 AZUL = (0,0,255)
+RED = (164,2,4)
+BLUE = (10,20,110)
 
 def strings():
     pass
@@ -22,6 +24,7 @@ def aleatorios():
 
 
 class obstaculos(pygame.sprite.Sprite):
+    #Estrutura do obstaculo
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
 
@@ -34,6 +37,7 @@ class obstaculos(pygame.sprite.Sprite):
     def colocar(self, superficie, tempo):
         superficie.blit(self.ImagemAsteroide1, self.rect)
         self.rect.left += self.velocidade
+        #Alternancia de direção por segundo
         if tempo % 2 == 0:
             self.rect.top += 5
         else:
@@ -44,6 +48,7 @@ class obstaculos(pygame.sprite.Sprite):
         
 
 class Inimigo(pygame.sprite.Sprite):
+    #Estrutura dos aliens    
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
 
@@ -58,8 +63,6 @@ class Inimigo(pygame.sprite.Sprite):
 
         self.listaInimigos = []
         self.listaRects = []
-        self.listaInimigos2 = []
-        self.listaRects2 = []
         self.lisPos = 0
         self.PercorrerLista = 0
         self.velocidade = 1
@@ -67,19 +70,35 @@ class Inimigo(pygame.sprite.Sprite):
         self.rect.left = aleatorio() - 70
         self.configTempo = 0
 
+    #Verificando colisão de inimigos com as balas e removendo as balas quando acerta
     def acertouVarios(self, inimigo, nave):
         for x in nave.listaDisparo:
             posicaoPersonagem = 0 
             for y in inimigo.listaRects:
-                if (x.rect.top <= y.top) and (x.rect.left+4 >= y.left-10 and x.rect.right-6 <= y.right):
+                if (x.rect.top <= y.bottom and x.rect.bottom  >= y.top) and (x.rect.left <= y.right and x.rect.right >= y.left):
                     inimigo.listaInimigos[posicaoPersonagem] = inimigo.explosao
+                    #nave.listaDisparo.remove(x)
                 posicaoPersonagem += 1
 
+    def limiteTelaInimigos(self,alien, player):
+        if len(alien.listaInimigos) > 0:
+            a = 0
+            for x in alien.listaRects:
+                if x.top >= altura + 10:
+                    alien.listaRects.remove(x)
+                    alien.listaInimigos.remove(alien.listaInimigos[a])
+                    alien.lisPos -= 1
+                    if alien.listaInimigos[a] == alien.explosao:
+                        player.NumeroPlacar += 10
+                    else:
+                        player.vidas -= 1
+                a += 1
+                
     def trajetoriaVarios(self):
         self.listaRects[self.PercorrerLista].top += self.velocidade
 
+        #Colocando na tela
     def comportamentoVarios(self, tempo):
-        
         if self.configTempo == tempo:
             self.variosInimigos()
             self.lisPos += 1
@@ -103,10 +122,23 @@ class Inimigo(pygame.sprite.Sprite):
         superficie.blit(self.explosao, self.rect)
 
 class Bala(pygame.sprite.Sprite):
-    def __init__(self, posx, posy):
+    def __init__(self, posx, posy,nave):
         pygame.sprite.Sprite.__init__(self)
-        self.imagemBala = pygame.image.load('imagens/bala.jpg')
-
+        
+        self.imagemCima = pygame.image.load('imagens/bala1.jpg')
+        self.imagemDireita = pygame.image.load('imagens/bala2.jpg')
+        self.imagemBaixo = pygame.image.load('imagens/bala3.jpg')
+        self.imagemEsquerda = pygame.image.load('imagens/bala4.jpg')
+            
+        if nave.ImagemNave == nave.ImagemCima:
+            self.imagemBala = self.imagemCima
+        if nave.ImagemNave == nave.ImagemDireita:
+            self.imagemBala = self.imagemDireita
+        if nave.ImagemNave == nave.ImagemBaixo:
+            self.imagemBala = self.imagemBaixo
+        if nave.ImagemNave == nave.ImagemEsquerda:
+            self.imagemBala = self.imagemEsquerda
+        
         self.rect = self.imagemBala.get_rect()
         self.acertou = False
         self.velocidadeBala = 5
@@ -114,9 +146,16 @@ class Bala(pygame.sprite.Sprite):
         self.rect.left = posx
 
     def trajetoria(self):
-        self.rect.top = self.rect.top - self.velocidadeBala
-
-    def colocar(self, superficie):
+        if self.imagemBala == self.imagemCima:
+            self.rect.top = self.rect.top - self.velocidadeBala
+        if self.imagemBala == self.imagemDireita:
+            self.rect.left = self.rect.left + self.velocidadeBala
+        if self.imagemBala == self.imagemBaixo:
+            self.rect.top = self.rect.top + self.velocidadeBala
+        if self.imagemBala == self.imagemEsquerda:
+            self.rect.left = self.rect.left - self.velocidadeBala
+        
+    def colocar(self, superficie,nave):
         superficie.blit(self.imagemBala, self.rect)
         self.trajetoria()
 
@@ -124,7 +163,11 @@ class nave(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.nomeJogador = ''
-        self.ImagemNave = pygame.image.load('imagens/Nave3.png')
+        self.ImagemCima = pygame.image.load('imagens/Nave3.png')
+        self.ImagemDireita = pygame.image.load('imagens/Nave4.png')
+        self.ImagemBaixo = pygame.image.load('imagens/Nave5.png')
+        self.ImagemEsquerda = pygame.image.load('imagens/Nave6.png')
+        self.ImagemNave = self.ImagemCima
 
         self.rect = self.ImagemNave.get_rect()
         self.rect.centerx = largura/2
@@ -134,6 +177,7 @@ class nave(pygame.sprite.Sprite):
         self.listaDisparo = []
         self.vida = True
         self.velocidade = 5
+        self.vidas = 5
 
         self.movEsq = False
         self.movDir = False
@@ -172,8 +216,8 @@ class nave(pygame.sprite.Sprite):
          self.rect.centery += self.velocidade
          self.__movimento()
 
-    def disparar(self, x , y):
-        tiroBala = Bala(x,y)
+    def disparar(self, x , y, nave):
+        tiroBala = Bala(x,y, nave)
         self.listaDisparo.append(tiroBala)
 
     def colocar(self,superficie):
@@ -286,29 +330,20 @@ def menu(tela, player):
                     player.nomeJogador += ' '
                 if evento.key == K_BACKSPACE:
                     player.nomeJogador = ''
-##                if evento.key == K_RETURN:
-##                    if player.nomeJogador != '':
-##                        sair = True
-##                    else:
-####                        tela.fill(0)
-####                        tela.blit(menuJogador, (0,0))
-####                        tela.blit(digiteNome, [300,altura/2])
-####                        tela.blit(ImagemNave, [animacaoNave,50])
-####                        tela.blit(menu_start, [300,400])
-####                        tela.blit(menu_sair, (880,480))
-####
-####                        pygame.display.update()
-####                        time.sleep(2)
-##                        tela.fill(0)
-##                        tela.blit(menuJogador, (0,0))
-##                        tela.blit(digiteNome, [250,250])
-##                        tela.blit(ImagemNave, [animacaoNave,50])
-##                        tela.blit(menu_start, [300,400])
-##                        tela.blit(menu_sair, (880,480))
-##                        tela.blit(menu_titulo,(0,altura-70))
-##
-##                        pygame.display.update()
-##                        time.sleep(2)
+                if evento.key == K_RETURN:
+                    if player.nomeJogador != '':
+                        sair = True
+                    else:
+                        tela.fill(0)
+                        tela.blit(menuJogador, (0,0))
+                        tela.blit(digiteNome, [250,250])
+                        tela.blit(ImagemNave, [animacaoNave,50])
+                        tela.blit(menu_start, [300,400])
+                        tela.blit(menu_sair, (880,480))
+                        tela.blit(menu_titulo,(0,altura-70))
+
+                        pygame.display.update()
+                        time.sleep(2)
                         
         tela.blit(menuJogador, (0,0))
         tela.blit(nomeJogador,[180,20])
@@ -335,30 +370,33 @@ def defendendoTerra():
     asteroides = obstaculos()
     menu(tela, player)
     
-    alien.configTempo = 5 + int(pygame.time.get_ticks()/1000)
+    alien.configTempo = 3 + int(pygame.time.get_ticks()/1000)
 
     #Texto
     fontJogador = pygame.font.SysFont(None, 20)
     jogador = fontJogador.render(str(player.nomeJogador) , True, WHITE)
     pontuacao = fontJogador.render('PONTUAÇÂO:', True, WHITE)
+    vidaText = fontJogador.render('VIDAS:', True, WHITE)
     perdeuText = fontJogador.render('PERDEU!', True, WHITE)
     
     perdeuImage = pygame.image.load('imagens/perdeu.png')
     ImagemFundo = pygame.image.load('imagens/espaco.jpg')
-    musicaJogo = pygame.mixer.Sound('sons/jogo.wav')
+    #musicaJogo = pygame.mixer.Sound('sons/jogo.wav')
     
     jogando = True
     perdeu = False
-    musicaJogo.play()
+    #musicaJogo.play()
 
+    tempoVida = 0
     relogio = pygame.time.Clock()
     while jogando != False:
         placar = fontJogador.render(str(round(player.NumeroPlacar,2)), True, WHITE)
+        vida = fontJogador.render(str(player.vidas), True, RED)
         relogio.tick(30)
         tempo = int(pygame.time.get_ticks()/1000)
-        print('Tempo = ', tempo)
-        print('relogio = ', relogio)
-        print('Alien.configTempo =', alien.configTempo)
+##        print('Tempo = ', tempo)
+##        print('relogio = ', relogio)
+##        print('Alien.configTempo =', alien.configTempo)
         for evento in pygame.event.get():
             if evento.type == QUIT:
                 pygame.quit()
@@ -376,7 +414,13 @@ def defendendoTerra():
                     player.movBaixo = True
                 if evento.key == K_SPACE:
                     x,y = player.rect.center
-                    player.disparar(x,y)
+                    player.disparar(x,y, player)
+                if evento.key == K_d:
+                    player.ImagemNave = player.ImagemDireita
+                if evento.key == K_s:
+                    player.ImagemNave = player.ImagemBaixo
+                if evento.key == K_a:
+                    player.ImagemNave = player.ImagemEsquerda
 
             if evento.type == pygame.KEYUP:
                 if evento.key == K_LEFT:
@@ -387,7 +431,13 @@ def defendendoTerra():
                     player.movCima = False
                 if evento.key == K_DOWN:
                     player.movBaixo = False
-
+                if evento.key == K_d:
+                    player.ImagemNave = player.ImagemCima
+                if evento.key == K_s:
+                    player.ImagemNave = player.ImagemCima
+                if evento.key == K_a:
+                    player.ImagemNave = player.ImagemCima
+                
         #correção de limite de tela           
         if player.rect.left <= 0:
             player.movEsq = False
@@ -407,19 +457,19 @@ def defendendoTerra():
             player.movimento_baixo()
 
         alien.acertouVarios(alien, player)
-        if len(alien.listaInimigos) > 0:
-            a = 0
-            for x in alien.listaRects:
-                if x.top >= altura + 10:
-                    alien.listaRects.remove(x)
-                    alien.listaInimigos.remove(alien.listaInimigos[a])
-                    alien.lisPos -= 1
-                    if alien.listaInimigos[a] == alien.explosao:
-                        player.NumeroPlacar += 10
-                    else:
-                        perdeu = True
-                a += 1
-                
+        alien.limiteTelaInimigos(alien,player)
+        
+        #Colisão com aliens ou asteroide, o jogador perde uma vida    
+        for y in alien.listaRects:
+            if tempoVida == 0:
+                if (y.bottom >= player.rect.top - 10 and y.top <= player.rect.bottom + 10) and (y.left  <= player.rect.right - 30 and y.right >= player.rect.left + 30):
+                    tempoVida = tempo
+            if asteroides.rect.right+30 >= player.rect.left and asteroides.rect.left-30 <= player.rect.right and player.rect.top-20 <= asteroides.rect.top and player.rect.bottom+20 >= asteroides.rect.bottom:
+                    tempoVida = tempo
+            if tempoVida != 0 and tempoVida + 1 == tempo:
+                player.vidas -= 1
+                tempoVida = 0
+                    
         tela.blit(ImagemFundo, (0,0))
         player.colocar(tela)
         alien.colocarVarios(tela, tempo)
@@ -427,14 +477,13 @@ def defendendoTerra():
         tela.blit(jogador, [12, 25])
         tela.blit(pontuacao, [12,10])
         tela.blit(placar, [110,10])
+        tela.blit(vidaText, [930,10])
+        tela.blit(vida, [980,10])
 
-        if asteroides.rect.right+30 >= player.rect.left and asteroides.rect.left-30 <= player.rect.right and player.rect.top-20 <= asteroides.rect.top and player.rect.bottom+20 >= asteroides.rect.bottom:
-            break
-        
         if len(player.listaDisparo) > 0:
             for x in player.listaDisparo:
-                x.colocar(tela)
-                if x.rect.top < -10:
+                x.colocar(tela,player)
+                if x.rect.top < -10 or x.rect.bottom > altura + 10 or x.rect.left < -10 or x.rect.right > largura + 10:
                     player.listaDisparo.remove(x)
         
         if perdeu == True:

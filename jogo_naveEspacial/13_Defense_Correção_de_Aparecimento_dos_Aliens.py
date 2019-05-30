@@ -286,29 +286,20 @@ def menu(tela, player):
                     player.nomeJogador += ' '
                 if evento.key == K_BACKSPACE:
                     player.nomeJogador = ''
-##                if evento.key == K_RETURN:
-##                    if player.nomeJogador != '':
-##                        sair = True
-##                    else:
-####                        tela.fill(0)
-####                        tela.blit(menuJogador, (0,0))
-####                        tela.blit(digiteNome, [300,altura/2])
-####                        tela.blit(ImagemNave, [animacaoNave,50])
-####                        tela.blit(menu_start, [300,400])
-####                        tela.blit(menu_sair, (880,480))
-####
-####                        pygame.display.update()
-####                        time.sleep(2)
-##                        tela.fill(0)
-##                        tela.blit(menuJogador, (0,0))
-##                        tela.blit(digiteNome, [250,250])
-##                        tela.blit(ImagemNave, [animacaoNave,50])
-##                        tela.blit(menu_start, [300,400])
-##                        tela.blit(menu_sair, (880,480))
-##                        tela.blit(menu_titulo,(0,altura-70))
-##
-##                        pygame.display.update()
-##                        time.sleep(2)
+                if evento.key == K_RETURN:
+                    if player.nomeJogador != '':
+                        sair = True
+                    else:
+                        tela.fill(0)
+                        tela.blit(menuJogador, (0,0))
+                        tela.blit(digiteNome, [250,250])
+                        tela.blit(ImagemNave, [animacaoNave,50])
+                        tela.blit(menu_start, [300,400])
+                        tela.blit(menu_sair, (880,480))
+                        tela.blit(menu_titulo,(0,altura-70))
+
+                        pygame.display.update()
+                        time.sleep(2)
                         
         tela.blit(menuJogador, (0,0))
         tela.blit(nomeJogador,[180,20])
@@ -335,7 +326,7 @@ def defendendoTerra():
     asteroides = obstaculos()
     menu(tela, player)
     
-    alien.configTempo = 5 + int(pygame.time.get_ticks()/1000)
+    alien.configTempo = 3 + int(pygame.time.get_ticks()/1000)
 
     #Texto
     fontJogador = pygame.font.SysFont(None, 20)
