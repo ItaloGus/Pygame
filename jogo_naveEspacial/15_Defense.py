@@ -381,11 +381,11 @@ def defendendoTerra():
     
     perdeuImage = pygame.image.load('imagens/perdeu.png')
     ImagemFundo = pygame.image.load('imagens/espaco.jpg')
-    #musicaJogo = pygame.mixer.Sound('sons/jogo.wav')
+    musicaJogo = pygame.mixer.Sound('sons/jogo.wav')
     
     jogando = True
     perdeu = False
-    #musicaJogo.play()
+    musicaJogo.play()
 
     tempoVida = 0
     relogio = pygame.time.Clock()
